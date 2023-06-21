@@ -4,7 +4,7 @@ from itertools import count
 
 def get_hh_vacancies(url: str, languages: list) -> tuple:
     for language in languages:
-        total_vacancies = list()
+        total_vacancies = {}
         for page in count():
             payload = {
                 "text": f"программист {language}",
@@ -12,15 +12,15 @@ def get_hh_vacancies(url: str, languages: list) -> tuple:
                 "period": 30,
                 "only_with_salary": True,
                 "currency": "RUR",
-                "per_page": 50,
+                "per_page": 100,
                 "page": page
             }
             response = requests.get(f"{url}/vacancies", params=payload)
             response.raise_for_status()
             vacancies = response.json()
-            total_vacancies.append(vacancies)
+            total_vacancies.update(vacancies)
 
-            if page >= vacancies["found"] / 50 or page >= 40:
+            if page >= vacancies["found"] / 100 or page >= 20:
                 break
             yield language, total_vacancies
 
@@ -61,10 +61,8 @@ def predict_rub_salary_hh(vacancy: dict) -> int:
 if __name__ == '__main__':
     url = "https://api.hh.ru"
     languages = ["JavaScript", "Java", "Python", "Ruby", "PHP", "C++", "C#", "C", "Go", "TypeScript"]
-    get_hh_vacancies(url, languages)
     for language, vacancies in get_hh_vacancies(url, languages):
-        print(language, vacancies)
-    #     print(get_hh_statistics(language, vacancies))
+        print(get_hh_statistics(language, vacancies))
 
     #      пагинация
     # for page in count():
