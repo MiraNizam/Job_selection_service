@@ -1,11 +1,11 @@
 import requests
 from itertools import count
+from collections import Counter
 
 
 def get_hh_vacancies(url: str, languages: list) -> tuple:
     for language in languages:
-        total_vacancies = {}
-        for page in count():
+        for page in count(1):
             payload = {
                 "text": f"программист {language}",
                 "area": "1",
@@ -18,15 +18,12 @@ def get_hh_vacancies(url: str, languages: list) -> tuple:
             response = requests.get(f"{url}/vacancies", params=payload)
             response.raise_for_status()
             vacancies = response.json()
-            total_vacancies.update(vacancies)
-
             if page >= vacancies["found"] / 100 or page >= 20:
                 break
-            yield language, total_vacancies
+            yield language, vacancies
 
 
-def get_hh_statistics(language: str, vacancies: dict) -> dict:
-    summary_statistics = {}
+def get_hh_page_statistics(language: str, vacancies: dict) -> dict:
     sum_salaries = 0
     vacancies_processed = 0
 
@@ -35,18 +32,28 @@ def get_hh_statistics(language: str, vacancies: dict) -> dict:
         sum_salaries += expected_salary
         vacancies_processed += 1
 
-    try:
-        average_salary = int(sum_salaries / vacancies_processed)
-    except ZeroDivisionError as e:
-        average_salary = 0
-
-    language_statistics = {
+    language_statistics_page = {
+        "language": language,
         "vacancies_found": vacancies["found"],
         "vacancies_processed": vacancies_processed,
-        "average_salary": average_salary
+        "sum_salaries": sum_salaries
     }
-    summary_statistics[language] = language_statistics
-    return summary_statistics
+    return language_statistics_page
+
+        # try:
+        #     average_salary = int(sum_salaries / vacancies_processed)
+        # except ZeroDivisionError as e:
+        #     average_salary = 0
+        #
+        # summary_statistics = {}
+        # language_statistics = {
+        #     "vacancies_found": vacancies["found"],
+        #     "vacancies_processed": vacancies_processed,
+        #     "average_salary": average_salary
+        # }
+        #
+        # summary_statistics[language] = language_statistics
+        # return summary_statistics
 
 
 def predict_rub_salary_hh(vacancy: dict) -> int:
@@ -61,24 +68,9 @@ def predict_rub_salary_hh(vacancy: dict) -> int:
 if __name__ == '__main__':
     url = "https://api.hh.ru"
     languages = ["JavaScript", "Java", "Python", "Ruby", "PHP", "C++", "C#", "C", "Go", "TypeScript"]
-    for language, vacancies in get_hh_vacancies(url, languages):
-        print(get_hh_statistics(language, vacancies))
+    get_hh_vacancies = get_hh_vacancies(url, languages)
 
-    #      пагинация
-    # for page in count():
-    #     payload = {
-    #         "text": f"программист {language}",
-    #         "area": "1",
-    #         "period": 30,
-    #         "only_with_salary": True,
-    #         "currency": "RUR",
-    #         "per_page": 10,
-    #         "page": page
-    #     }
-    #     response = requests.get(f"{url}/vacancies", params=payload)
-    #     response.raise_for_status()
-    #     vacancies = response.json()
-    #     url_pages.append(vacancies)
-    #
-    #     if page >= vacancies["found"] / 10 or page >= 100:
-    #         break
+    common_statistics = [get_hh_page_statistics(language, vacancies) for language, vacancies in
+                         get_hh_vacancies]
+    print(common_statistics)
+
