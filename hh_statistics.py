@@ -1,12 +1,6 @@
 import requests
 from environs import Env
 
-env = Env()
-env.read_env()
-
-LANGUAGES = env.list("LANGUAGES")
-URL = "https://api.hh.ru"
-
 
 def get_hh_vacancies(url: str, language: str) -> list:
     total_vacancies = []
@@ -65,6 +59,12 @@ def get_hh_statistics(total_vacancies: list) -> dict:
 
 
 def main():
+    env = Env()
+    env.read_env()
+
+    LANGUAGES = env.list("LANGUAGES")
+    URL = "https://api.hh.ru"
+
     general_statistics = {}
     for language in LANGUAGES:
         total_vacancies = get_hh_vacancies(URL, language)

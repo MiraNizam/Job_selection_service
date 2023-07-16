@@ -1,13 +1,6 @@
 import requests
 from environs import Env
 
-env = Env()
-env.read_env()
-
-SECRET_KEY = env.str("SECRET_KEY")
-LANGUAGES = env.list("LANGUAGES")
-URL = "https://api.superjob.ru/2.0/vacancies/"
-
 
 def get_sj_vacancies(url: str, secret_key: str, language: str) -> list:
     headers = {"X-Api-App-Id": secret_key}
@@ -61,6 +54,13 @@ def get_sj_statistics(total_vacancies: list) -> dict:
 
 
 def main():
+    env = Env()
+    env.read_env()
+
+    SECRET_KEY = env.str("SECRET_KEY")
+    LANGUAGES = env.list("LANGUAGES")
+    URL = "https://api.superjob.ru/2.0/vacancies/"
+
     general_statistics = {}
     for language in LANGUAGES:
         total_vacancies = get_sj_vacancies(URL, SECRET_KEY, language)
