@@ -71,7 +71,3 @@ def main():
         language_statistics = get_hh_statistics(total_vacancies)
         general_statistics[language] = language_statistics
     return general_statistics
-
-
-if __name__ == '__main__':
-    main()
