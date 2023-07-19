@@ -1,4 +1,5 @@
 from terminaltables import AsciiTable
+
 from hh_statistics import main as get_hh_statistics
 from sj_statistics import main as get_sj_statistics
 
