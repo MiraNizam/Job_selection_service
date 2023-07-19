@@ -1,6 +1,9 @@
+from itertools import count
+
 import requests
 from environs import Env
-from itertools import count
+
+from predict_salary import predict_salary
 
 
 def get_sj_vacancies(url: str, secret_key: str, language: str) -> list:
@@ -20,17 +23,6 @@ def get_sj_vacancies(url: str, secret_key: str, language: str) -> list:
     return total_vacancies
 
 
-def predict_rub_salary_sj(vacancy: dict or None) -> int or None:
-    if vacancy is None:
-        return None
-    elif vacancy["payment_from"] != 0 and vacancy["payment_to"] != 0 and vacancy["currency"] == "rub":
-        return int((vacancy["payment_from"] + vacancy["payment_to"] / 2))
-    elif vacancy["payment_from"] != 0 and vacancy["payment_to"] == 0 and vacancy["currency"] == "rub":
-        return int(vacancy["payment_from"] * 1.2)
-    elif vacancy["payment_from"] == 0 and vacancy["payment_to"] != 0 and vacancy["currency"] == "rub":
-        return int(vacancy["payment_to"] * 0.8)
-
-
 def get_sj_statistics(total_vacancies: list) -> dict:
     sum_salaries = 0
     vacancies_processed = 0
@@ -39,8 +31,8 @@ def get_sj_statistics(total_vacancies: list) -> dict:
     for vacancies in total_vacancies:
         vacancies_found = vacancies["total"]
         for vacancy in vacancies["objects"]:
-            expected_salary = predict_rub_salary_sj(vacancy)
-            if expected_salary is None:
+            expected_salary = predict_salary(vacancy, "payment_from", "payment_to", "rub")
+            if not expected_salary:
                 continue
             sum_salaries += expected_salary
             vacancies_processed += 1

@@ -1,10 +1,12 @@
+from itertools import count
+
 import requests
 from environs import Env
-from itertools import count
+
+from predict_salary import predict_salary
 
 
 def get_hh_vacancies(url: str, language: str) -> list:
-
     total_vacancies = []
     for page in count():
         period_days = 30
@@ -27,17 +29,6 @@ def get_hh_vacancies(url: str, language: str) -> list:
     return total_vacancies
 
 
-def predict_salary_hh(vacancy: dict or None) -> int or None:
-    if vacancy is None:
-        return None
-    elif vacancy["from"] is not None and vacancy["to"] is not None:
-        return int((vacancy['from'] + vacancy["to"]) / 2)
-    elif vacancy["from"] is not None and vacancy["to"] is None:
-        return int(vacancy["from"]*1.2)
-    elif vacancy["from"] is None and vacancy["to"] is not None:
-        return int(vacancy["to"] * 0.8)
-
-
 def get_hh_statistics(total_vacancies: list) -> dict:
     sum_salaries = 0
     vacancies_processed = 0
@@ -46,8 +37,8 @@ def get_hh_statistics(total_vacancies: list) -> dict:
     for page_vacancies in total_vacancies:
         vacancies_found = page_vacancies["found"]
         for vacancy in page_vacancies["items"]:
-            expected_salary = predict_salary_hh(vacancy["salary"])
-            if expected_salary is None:
+            expected_salary = predict_salary(vacancy["salary"], "from", "to", "RUR")
+            if not expected_salary:
                 continue
             sum_salaries += expected_salary
             vacancies_processed += 1
