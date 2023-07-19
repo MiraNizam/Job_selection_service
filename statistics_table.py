@@ -14,7 +14,7 @@ def create_table(statistics: dict, title: str):
                            statistics_data['average_salary']
                            ])
     table = AsciiTable(table_fields, title)
-    print(table.table)
+    return table.table
 
 
 def main():
@@ -22,8 +22,8 @@ def main():
     sj_title = "SuperJob Moscow"
     hh_statistics = get_hh_statistics()
     sj_statistics = get_sj_statistics()
-    create_table(hh_statistics, hh_title)
-    create_table(sj_statistics, sj_title)
+    print(create_table(hh_statistics, hh_title))
+    print(create_table(sj_statistics, sj_title))
 
 
 if __name__ == '__main__':
