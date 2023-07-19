@@ -1,23 +1,28 @@
 import requests
 from environs import Env
+from itertools import count
 
 
 def get_hh_vacancies(url: str, language: str) -> list:
+
     total_vacancies = []
-    for page in range(20):
+    for page in count():
+        period_days = 30
+        per_page = 100
+        max_count_results = 2000
         payload = {
             "text": f"программист {language}",
-            "area": "1", # Москва
-            "period": 30,
+            "area": "1",  # Москва
+            "period": period_days,
             "currency": "RUR",
-            "per_page": 100,
+            "per_page": per_page,
             "page": page
         }
         response = requests.get(f"{url}/vacancies", params=payload)
         response.raise_for_status()
         vacancies = response.json()
         total_vacancies.append(vacancies)
-        if page > int(vacancies["found"] / 100):
+        if page > int(vacancies["found"] / per_page) or page >= (max_count_results / per_page) - 1:
             break
     return total_vacancies
 

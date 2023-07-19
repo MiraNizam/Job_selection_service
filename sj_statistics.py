@@ -1,17 +1,21 @@
 import requests
 from environs import Env
+from itertools import count
 
 
 def get_sj_vacancies(url: str, secret_key: str, language: str) -> list:
+    per_page = 100
+    max_count_results = 500
+
     headers = {"X-Api-App-Id": secret_key}
     total_vacancies = []
-    for page in range(5):
-        payload = {"town": "Москва", "keyword": f"программист {language}", "page": page, "count": 100}
+    for page in count():
+        payload = {"town": "Москва", "keyword": f"программист {language}", "page": page, "count": per_page}
         response = requests.get(url, headers=headers, params=payload)
         response.raise_for_status()
         vacancies = response.json()
         total_vacancies.append(vacancies)
-        if page > vacancies["total"] / 100:
+        if page > vacancies["total"] / per_page or page >= (max_count_results / per_page) - 1:
             break
     return total_vacancies
 
