@@ -27,7 +27,6 @@ def get_sj_statistics(total_vacancies: list) -> dict:
     sum_salaries = 0
     vacancies_processed = 0
     vacancies_found = 0
-    average_salary = 0
     for vacancies in total_vacancies:
         vacancies_found = vacancies["total"]
         for vacancy in vacancies["objects"]:
@@ -36,10 +35,10 @@ def get_sj_statistics(total_vacancies: list) -> dict:
                 continue
             sum_salaries += expected_salary
             vacancies_processed += 1
-        try:
-            average_salary = int(sum_salaries / vacancies_processed)
-        except ZeroDivisionError:
-            average_salary = 0
+    try:
+        average_salary = int(sum_salaries / vacancies_processed)
+    except ZeroDivisionError:
+        average_salary = 0
 
     language_statistics = {
             "vacancies_found": vacancies_found,

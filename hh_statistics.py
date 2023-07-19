@@ -33,7 +33,6 @@ def get_hh_statistics(total_vacancies: list) -> dict:
     sum_salaries = 0
     vacancies_processed = 0
     vacancies_found = 0
-    average_salary = 0
     for page_vacancies in total_vacancies:
         vacancies_found = page_vacancies["found"]
         for vacancy in page_vacancies["items"]:
@@ -42,10 +41,11 @@ def get_hh_statistics(total_vacancies: list) -> dict:
                 continue
             sum_salaries += expected_salary
             vacancies_processed += 1
-            try:
-                average_salary = int(sum_salaries / vacancies_processed)
-            except ZeroDivisionError:
-                average_salary = 0
+    try:
+        average_salary = int(sum_salaries / vacancies_processed)
+    except ZeroDivisionError:
+        average_salary = 0
+
     language_statistics = {
         "vacancies_found": vacancies_found,
         "vacancies_processed": vacancies_processed,
