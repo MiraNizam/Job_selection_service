@@ -1,12 +1,12 @@
 from itertools import count
 
 import requests
-from environs import Env
 
 from predict_salary import predict_salary
 
 
-def get_sj_vacancies(url: str, secret_key: str, language: str) -> list:
+def get_sj_vacancies(secret_key: str, language: str) -> list:
+    sj_api_url = "https://api.superjob.ru/2.0"
     per_page = 100
     max_count_results = 500
 
@@ -14,7 +14,7 @@ def get_sj_vacancies(url: str, secret_key: str, language: str) -> list:
     total_vacancies = []
     for page in count():
         payload = {"town": "Москва", "keyword": f"программист {language}", "page": page, "count": per_page}
-        response = requests.get(url, headers=headers, params=payload)
+        response = requests.get(f"{sj_api_url}/vacancies/", headers=headers, params=payload)
         response.raise_for_status()
         vacancies = response.json()
         total_vacancies.append(vacancies)
@@ -23,17 +23,20 @@ def get_sj_vacancies(url: str, secret_key: str, language: str) -> list:
     return total_vacancies
 
 
-def get_sj_statistics(total_vacancies: list) -> dict:
+def get_sj_page_statistics(total_vacancies: list) -> dict:
     sum_salaries = 0
     vacancies_processed = 0
     vacancies_found = 0
     for vacancies in total_vacancies:
         vacancies_found = vacancies["total"]
         for vacancy in vacancies["objects"]:
-            expected_salary = predict_salary(vacancy, "payment_from", "payment_to", "rub")
-            if not expected_salary:
+            from_salary = vacancy["payment_from"]
+            to_salary = vacancy["payment_to"]
+            if not from_salary and not to_salary or vacancy["currency"] != "rub":
                 continue
-            sum_salaries += expected_salary
+            else:
+                expected_salary = predict_salary(from_salary, to_salary)
+                sum_salaries += expected_salary
             vacancies_processed += 1
     try:
         average_salary = int(sum_salaries / vacancies_processed)
@@ -48,17 +51,10 @@ def get_sj_statistics(total_vacancies: list) -> dict:
     return language_statistics
 
 
-def main():
-    env = Env()
-    env.read_env()
-
-    SECRET_KEY = env.str("SECRET_KEY")
-    LANGUAGES = env.list("LANGUAGES")
-    URL = "https://api.superjob.ru/2.0/vacancies/"
-
+def get_sj_statistics(secret_key: str, languages: list):
     general_statistics = {}
-    for language in LANGUAGES:
-        total_vacancies = get_sj_vacancies(URL, SECRET_KEY, language)
-        language_statistics = get_sj_statistics(total_vacancies)
+    for language in languages:
+        total_vacancies = get_sj_vacancies(secret_key, language)
+        language_statistics = get_sj_page_statistics(total_vacancies)
         general_statistics[language] = language_statistics
     return general_statistics
