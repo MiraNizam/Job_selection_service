@@ -50,8 +50,6 @@ Example:
 
 **SECRET_KEY** = "replace me"
 
-**LANGUAGES** = JavaScript,Java,Python,PHP,C++,C#,C
-
 ### How to run code 
 
 ```commandline
