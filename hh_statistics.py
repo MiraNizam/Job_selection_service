@@ -36,13 +36,12 @@ def get_hh_page_statistics(total_vacancies: list) -> dict:
     for page_vacancies in total_vacancies:
         vacancies_found = page_vacancies["found"]
         for vacancy in page_vacancies["items"]:
-            if vacancy["salary"] and vacancy["salary"]["currency"] == "RUR":
-                from_salary = vacancy["salary"]["from"]
-                to_salary = vacancy["salary"]["to"]
-                expected_salary = predict_salary(from_salary, to_salary)
-                sum_salaries += expected_salary
-            else:
+            if not vacancy["salary"] or vacancy["salary"]["currency"] != "RUR":
                 continue
+            from_salary = vacancy["salary"]["from"]
+            to_salary = vacancy["salary"]["to"]
+            expected_salary = predict_salary(from_salary, to_salary)
+            sum_salaries += expected_salary
             vacancies_processed += 1
     try:
         average_salary = int(sum_salaries / vacancies_processed)
